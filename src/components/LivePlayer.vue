@@ -56,30 +56,23 @@ export default {
       return `//${this.srsAddress}:8080/live/${this.streamName}.${extension}`;
     },
     video() {
-      const videoType = this.mesPlayers.flvJs;
-
-      console.log(`computed video url: ${this.streamUrl}`);
-
       return {
         url: this.streamUrl,
-        type: videoType.typeStr,
+        type: this.mesPlayers[this.selectLiveType].typeStr,
         customType: {
           // HTTP-FLV flv.js
-          flvJs: (video, player) => {
-            console.log(`flv.js: url before distroy: ${video.src}`)
-
-            const selfPlayer = this.mesPlayers["flvJs"].player
-            console.log(flvjs.name)
-
+          flvJs: (video) => {
             if (this.mesPlayers.flvJs.player) {
-              console.log("flv.js: destroy old player")
-              this.mesPlayers.flvJs.player.pause();
-              this.mesPlayers.flvJs.player.detachMediaElement();
-              this.mesPlayers.flvJs.player.unload();
-              this.mesPlayers.flvJs.player.destroy();
+              console.log(`[flvJs] destroy old player: ${video.src}`)
+              const oldPlayer = this.mesPlayers.flvJs.player;
+
+              oldPlayer.pause();
+              oldPlayer.detachMediaElement();
+              oldPlayer.unload();
+              oldPlayer.destroy();
             }
 
-            console.log(`flv.js: try load video ${this.streamUrl}`)
+            console.log(`[flvJs] try load video: ${this.streamUrl}`)
             this.mesPlayers.flvJs.player = flvjs.createPlayer({
               type: 'flv',
               isLive: true,
@@ -89,18 +82,26 @@ export default {
             this.mesPlayers.flvJs.player.load();
           },
           // HLS hls.js
-          hlsJs: (video, player) => {
+          hlsJs: (video) => {
+            if (this.mesPlayers.hlsJs.player) {
+              console.log(`[hlsJs] destroy old player: ${video.src}`)
+              const oldPlayer = this.mesPlayers.hlsJs.player;
+              oldPlayer.detachMedia()
+              oldPlayer.destroy()
+            }
+
+            console.log(`[hlsJs] try load video: ${this.streamUrl}`)
             const hls = new Hls();
-            hls.loadSource(videoUrl);
+            hls.loadSource(this.streamUrl);
             hls.attachMedia(video);
           },
           // MPEG-DASH dash.js
-          dashJs: (video, player) => {
+          dashJs: (video) => {
             dashjs.MediaPlayer()
               .create().initialize(video, videoUrl, false);
           },
           // MPEG-DASH shaka-player
-          dashShaka: (video, player) => {
+          dashShaka: (video) => {
             const playerShaka = new shaka.Player(video); // 将会修改 video.src
             playerShaka.load(videoUrl);
           },
