@@ -13,7 +13,7 @@
                 </v-responsive>
               </v-card-text>
               <v-card-actions>
-
+                Viewer: {{ streamClients.length }}
               </v-card-actions>
             </v-card>
           </v-container>
@@ -53,63 +53,57 @@
   </v-container>
 </template>
 
-<script lang="ts">
-import LivePlayer from "@/components/LivePlayer.vue";
+<script setup lang="ts">
+import {computed, onMounted, ref} from "vue";
 import request from "@/utils/request";
 import {decodeBase64} from "@/utils/base64";
-import {defineComponent} from "vue";
+import LivePlayer from "@/components/LivePlayer.vue";
 
-export default defineComponent({
-  name: "MainPage",
-  components: {LivePlayer},
-  data: () => ({
-    streamChannels: [],
-    selectedStreamName: "_test"
-  }),
-  computed: {
-    selectedStreamNameReadable() {
-      if (this.selectedStreamName.startsWith("_")) {
-        return this.selectedStreamName;
-      }
-
-      return decodeBase64(this.selectedStreamName);
-    }
-  },
-  mounted() {
-    // select first
-    this.fetchStreamList();
-  },
-  methods: {
-    handleSelect(select: any) {
-      console.log(select)
-
-      this.selectedStreamName = select.id
-    },
-    fetchViewCount() {
-
-    },
-    async fetchStreamList() {
-      const response = await request("/api/v1/streams/?count=50")
-      const streamList = response.data['streams']
-      this.streamChannels = streamList
-        .filter(stream =>
-          stream['video'] && !stream['name'].startsWith("_")
-        )
-        .map(stream => ({
-          title: decodeBase64(stream['name']),
-          streamName: stream['name']
-        }))
-
-      if (this.streamChannels.length > 0) {
-        this.$refs.liveListBox.select(this.streamChannels[0].streamName, true)
-      }
-
-      console.log(`[fetchStreamList] fetch streams: ${this.streamChannels.length}`)
-    }
+const streamChannels = ref([])
+const streamClients = ref([])
+const selectedStreamName = ref("_test")
+const liveListBox = ref()
+const selectedStreamNameReadable = computed(() => {
+  if (selectedStreamName.value.startsWith("_")) {
+    return selectedStreamName.value;
   }
+
+  return decodeBase64(selectedStreamName.value);
 })
+
+onMounted(() => {
+  streamChannels.value = await fetchStreamList()
+  streamClients.value = await fetchClientList()
+
+  const channelCount = streamChannels.value.length
+  if (channelCount > 0) {
+    liveListBox.value.select(streamChannels.value[0].streamName, true)
+  }
+
+  console.log(`[onMounted] init with streams: ${channelCount}`)
+})
+
+function handleSelect(select: any) {
+  console.log(select)
+
+  selectedStreamName.value = select.id
+}
+
+async function fetchClientList() {
+  const response = await request("/api/v1/clients/?count=100")
+  return response.data.clients ?? []
+}
+
+async function fetchStreamList() {
+  const response = await request("/api/v1/streams/?count=50")
+  const streamList = response.data['streams']
+  return streamList
+    .filter((stream: any) =>
+      stream['video'] && !stream['name'].startsWith("_")
+    )
+    .map((stream: any) => ({
+      title: decodeBase64(stream['name']),
+      streamName: stream['name']
+    }))
+}
 </script>
-
-<style scoped>
-
-</style>
