@@ -71,7 +71,7 @@ const selectedStreamNameReadable = computed(() => {
   return decodeBase64(selectedStreamName.value);
 })
 
-onMounted(() => {
+onMounted(async () => {
   streamChannels.value = await fetchStreamList()
   streamClients.value = await fetchClientList()
 
@@ -84,7 +84,7 @@ onMounted(() => {
 })
 
 function handleSelect(select: any) {
-  console.log(select)
+  console.log(typeof select)
 
   selectedStreamName.value = select.id
 }
