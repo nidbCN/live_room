@@ -1,9 +1,9 @@
 <template>
-  <v-container fluid>
+  <v-container :fluid="true">
     <v-col cols="12">
       <v-row>
         <v-col md="8" sm="12">
-          <live-player :stream-name="liveChannel"/>
+          <live-player :stream-name="selectedStreamName"/>
         </v-col>
         <v-col md="4" sm="12">
           <v-card class="my-8">
@@ -11,9 +11,9 @@
               公告板
             </v-card-title>
             <v-card-text>
-              欢迎来到 Gaein nidb 的直播间！
-              <hr/>
-              最近在播放 《瑞克和莫蒂》第一到第三季。无人值守但是随缘开播。P.S.服务器在美国纽约，卡的话就卡一卡就好了罢。
+              <h3>欢迎来到 Gaein nidb 的直播间！</h3>
+              <p>服务器在美国纽约，卡的话就卡一卡就好了罢。</p>
+              <p>最近在播放 《瑞克和莫蒂》第一到第三季。无人值守但是随缘开播。当然本直播间也支持选择频道。</p>
             </v-card-text>
           </v-card>
           <v-card class="my-8">
@@ -23,9 +23,9 @@
             <v-card-text>
               <v-list
                 ref="liveListBox"
-                :items="streamChannel"
+                :items="streamChannels"
                 item-title="title"
-                item-value="name"
+                item-value="streamName"
                 @click:select="handleSelect"
               />
             </v-card-text>
@@ -38,48 +38,58 @@
 
 <script>
 import LivePlayer from "@/components/LivePlayer.vue";
-import {Axios} from "axios";
+import request from "@/utils/request";
+import {decode} from 'js-base64';
 
 export default {
   name: "MainPage",
   components: {LivePlayer},
   data: () => ({
-    streamChannel: [{
-      title: "瑞克和莫蒂",
-      name: "rick_and_morty"
-    }, {
-      title: "中国出了个毛泽东",
-      name: "5Lit5Zu95Ye65LqG5Liq5q+b5rO95LicCg"
-    }],
-    selectedStream: {}
+    streamChannels: [],
+    selectedStream: {},
+    selectedStreamName: "_test"
   }),
   mounted() {
-    this.$refs.liveListBox.select(this.streamChannel[0].name, true)
+    // select first
+    // this.$refs.liveListBox.select(this.streamChannels[0].name, true)
+    this.fetchStreamList();
   },
   methods: {
     handleSelect(select) {
       this.selectedStream = {
         name: select.id
       }
+
+      this.selectedStreamName = select.id
     },
     fetchViewCount() {
 
     },
-    fetchStreamList() {
+    async fetchStreamList() {
+      const response = await request("/api/v1/streams/?count=50")
+      const streamList = response.data['streams']
+      this.streamChannels = streamList
+        .filter(stream => stream['video'] && !stream['name'].startsWith("_"))
+        .map(stream => ({
+          title: decode(stream['name']),
+          streamName: stream['name']
+        }))
 
+      console.log(`[fetchStreamList] fetch streams: ${this.streamChannels.length}`)
     }
   },
   computed: {
-    liveChannel() {
-      let channel = ""
+    streamName() {
+      let channel = "_test"
 
       if (this.selectedStream.name) {
         channel = this.selectedStream.name
-      } else {
-        channel = this.streamChannel[0].name
+      } else if (this.streamChannels.length > 0) {
+        // default value comes from first
+        channel = this.streamChannels[0].name
       }
 
-      console.log(`Compute liveChannel: ${channel}`)
+      console.log(`[streamName] select streamName: ${channel}`)
 
       return channel
     }

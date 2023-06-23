@@ -2,10 +2,10 @@ import axios from 'axios'
 
 // create an axios instance
 const service = axios.create({
-  baseURL: 'https://v4-us-ny.gaein.cn:1985',
+  baseURL: 'http://v4-us-ny.gaein.cn:1985',
   // baseURL: process.env.VUE_APP_BASE_API, // url = base url + request url
   // withCredentials: true, // send cookies when cross-domain requests
-  timeout: 120 // request timeout
+  timeout: 1200 // request timeout
 })
 
 // request interceptor
