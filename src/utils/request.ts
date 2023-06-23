@@ -1,8 +1,12 @@
 import axios from 'axios'
 
+export const options = {
+  serverAddress: "live.gaein.cn"
+}
+
 // create an axios instance
 const service = axios.create({
-  baseURL: 'http://v4-us-ny.gaein.cn:1985',
+  baseURL: `https://${options.serverAddress}:1985`,
   // baseURL: process.env.VUE_APP_BASE_API, // url = base url + request url
   // withCredentials: true, // send cookies when cross-domain requests
   timeout: 30000 // request timeout
@@ -17,7 +21,8 @@ service.interceptors.request.use(
   },
   error => {
     // do something with request error
-    console.log("[http]request error:" + error) // for debug
+    console.log("[http]request error:" + error)
+
     return Promise.reject(error)
   }
 )

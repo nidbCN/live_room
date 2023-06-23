@@ -9,6 +9,6 @@
   </v-app>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import MainPage from '@/layout/MainPage.vue'
 </script>

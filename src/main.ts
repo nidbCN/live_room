@@ -1,5 +1,5 @@
 /**
- * main.js
+ * main.ts
  *
  * Bootstraps Vuetify and other plugins then mounts the App`
  */
@@ -8,16 +8,10 @@
 import App from './App.vue'
 
 // Composables
-import {createApp} from 'vue'
+import { createApp } from 'vue'
 
 // Plugins
-import {registerPlugins} from '@/plugins'
-
-import VConsole from 'vconsole';
-
-if (import.meta.env.NODE_ENV === 'development') {
-  const vConsole = new VConsole()
-}
+import { registerPlugins } from '@/plugins'
 
 const app = createApp(App)
 
