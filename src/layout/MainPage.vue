@@ -13,7 +13,11 @@
                 </v-responsive>
               </v-card-text>
               <v-card-actions>
-                Viewer: {{ streamClients.length }}
+                <span>Viewer: {{ streamClients.length }}</span>
+                <v-select
+                  label="Select"
+                  :items="Object.keys(MesPlayersList)"
+                ></v-select>
               </v-card-actions>
             </v-card>
           </v-container>
@@ -58,6 +62,7 @@ import {computed, onMounted, ref} from "vue";
 import request from "@/utils/request";
 import {decodeBase64} from "@/utils/base64";
 import LivePlayer from "@/components/LivePlayer.vue";
+import {MesPlayersList} from "@/utils/videoEngine";
 
 const streamChannels = ref([])
 const streamClients = ref([])
